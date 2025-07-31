@@ -1,50 +1,29 @@
-name: CI Pipeline
+name: Deploy React App to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-env:
-  NODE_VERSION: '20'
+    branches:
+      - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
-    outputs:
-      build-dir: ${{ steps.set-output.outputs.build-dir }}
-
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Usar Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 20
 
-      - name: Instalar dependencias
+      - name: Install dependencies
         run: npm install
 
-      - name: Build de la aplicación
+      - name: Build app
         run: npm run build
 
-      - name: Set output directory
-        id: set-output
-        run: echo "build-dir=build" >> $GITHUB_OUTPUT
-
-  upload-artifact:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Descargar el repo
-        uses: actions/checkout@v3
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-build
-          path: build
+      - name: Deploy to GitHub Pages
+        run: npm run deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
