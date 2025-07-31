@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/repo2-prueba-github-actions/static/js/main.bb9d0656.js",
+    "main.js": "/repo2-prueba-github-actions/static/js/main.07046b4c.js",
     "index.html": "/repo2-prueba-github-actions/index.html",
-    "main.bb9d0656.js.map": "/repo2-prueba-github-actions/static/js/main.bb9d0656.js.map"
+    "main.07046b4c.js.map": "/repo2-prueba-github-actions/static/js/main.07046b4c.js.map"
   },
   "entrypoints": [
-    "static/js/main.bb9d0656.js"
+    "static/js/main.07046b4c.js"
   ]
 }
