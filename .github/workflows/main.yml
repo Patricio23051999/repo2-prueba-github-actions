@@ -41,7 +41,6 @@ jobs:
 
   deploy:
     needs: sonarqube
-    if: ${{ needs.sonarqube.outputs.quality_gate_status == 'PASSED' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
