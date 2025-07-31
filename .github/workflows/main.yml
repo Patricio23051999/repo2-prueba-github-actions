@@ -9,13 +9,12 @@ permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+  sonarqube-analysis:
+    name: Analyze code with SonarQube
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -24,7 +23,50 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-      
+
+      - name: Build app
+        run: npm run build
+
+      - name: Download SonarQube Scanner
+        run: |
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip sonar-scanner-cli-5.0.1.3006-linux.zip
+          mv sonar-scanner-5.0.1.3006-linux sonar-scanner
+
+      - name: Run SonarQube analysis
+        run: |
+          ./sonar-scanner/bin/sonar-scanner \
+            -Dsonar.projectKey=my-react-app \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+  wait-for-quality-gate:
+    needs: sonarqube-analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for SonarQube Quality Gate
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        with:
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+          sonar-host-url: http://localhost:9000
+
+  deploy:
+    needs: wait-for-quality-gate
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
       - name: Fix permissions for react-scripts
         run: chmod +x node_modules/.bin/react-scripts
 
@@ -33,7 +75,7 @@ jobs:
 
       - name: Fix gh-pages permissions
         run: chmod +x node_modules/.bin/gh-pages
-      
+
       - name: Configure Git author
         run: |
           git config --global user.email "actions@github.com"
@@ -43,3 +85,4 @@ jobs:
         run: npm run deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
