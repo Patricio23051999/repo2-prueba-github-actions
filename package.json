@@ -2,7 +2,7 @@
   "name": "my-react-app",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://patricio23051999.github.io/repo2-prueba-github-actions",
+  "homepage": "https://Patricio23051999.github.io/repo2-prueba-github-actions",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -15,9 +15,20 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build -u \"github-actions-bot <github-actions-bot@users.noreply.github.com>\" --repo=https://x-access-token:${GITHUB_TOKEN}@github.com/Patricio23051999/repo2-prueba-github-actions.git"
-
   },
   "devDependencies": {
     "gh-pages": "^6.3.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
