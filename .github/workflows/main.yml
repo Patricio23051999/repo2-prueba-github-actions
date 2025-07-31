@@ -33,7 +33,7 @@ jobs:
 
       - name: Set output directory
         id: set-output
-        run: echo "build-dir=dist" >> $GITHUB_OUTPUT
+        run: echo "build-dir=build" >> $GITHUB_OUTPUT
 
   upload-artifact:
     needs: build
@@ -47,4 +47,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-build
-          path: dist
+          path: build
