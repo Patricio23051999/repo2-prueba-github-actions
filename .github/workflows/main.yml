@@ -1,4 +1,4 @@
-name: Deploy React App to GitHub Pages
+name: Build, Analyze and Deploy React App
 
 on:
   push:
@@ -9,12 +9,15 @@ permissions:
   contents: write
 
 jobs:
-  sonarqube-analysis:
-    name: Analyze code with SonarQube
+  sonarqube:
     runs-on: ubuntu-latest
+    outputs:
+      quality_gate_status: ${{ steps.quality_gate.outputs.quality_gate_status }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -24,39 +27,21 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Fix permissions for react-scripts
-        run: chmod +x node_modules/.bin/react-scripts
+      - name: SonarQube Scan
+        id: scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Build app
-        run: npm run build
-
-      - name: Download SonarQube Scanner
-        run: |
-          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-          unzip sonar-scanner-cli-5.0.1.3006-linux.zip
-          mv sonar-scanner-5.0.1.3006-linux sonar-scanner
-
-      - name: Run SonarQube analysis
-        run: |
-          ./sonar-scanner/bin/sonar-scanner \
-            -Dsonar.projectKey=my-react-app \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=http://localhost:9000 \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-
-  wait-for-quality-gate:
-    needs: sonarqube-analysis
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for SonarQube Quality Gate
+      - name: Quality Gate Check
+        id: quality_gate
         uses: sonarsource/sonarqube-quality-gate-action@master
-        with:
-          sonar-token: ${{ secrets.SONAR_TOKEN }}
-          sonar-host-url: http://localhost:9000
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   deploy:
-    needs: wait-for-quality-gate
-    if: success()
+    needs: sonarqube
+    if: needs.sonarqube.outputs.quality_gate_status == 'passed'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
