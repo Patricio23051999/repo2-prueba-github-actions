@@ -26,6 +26,9 @@ jobs:
       - name: Build app
         run: npm run build
 
+      - name: Fix gh-pages permissions
+        run: chmod +x node_modules/.bin/gh-pages
+
       - name: Deploy to GitHub Pages
         run: npm run deploy
         env:
